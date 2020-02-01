@@ -34,6 +34,7 @@ import chat.rocket.core.internal.rest.login
 import chat.rocket.core.internal.rest.loginWithEmail
 import chat.rocket.core.internal.rest.loginWithLdap
 import chat.rocket.core.internal.rest.me
+import chat.rocket.core.model.Myself
 import javax.inject.Inject
 
 class LoginPresenter @Inject constructor(
@@ -87,50 +88,60 @@ class LoginPresenter @Inject constructor(
                     }
                 }
                 val myself = retryIO("me()") { client.me() }
-                myself.username?.let { username ->
-                    val user = User(
-                        id = myself.id,
-                        roles = myself.roles,
-                        status = myself.status,
-                        name = myself.name,
-                        emails = myself.emails?.map { Email(it.address ?: "", it.verified) },
-                        username = username,
-                        utcOffset = myself.utcOffset
-                    )
-                    localRepository.saveCurrentUser(currentServer, user)
-                    saveCurrentServer.save(currentServer)
-                    localRepository.save(LocalRepository.CURRENT_USERNAME_KEY, username)
-                    saveAccount(username)
-                    saveToken(token)
-                    analyticsManager.logLogin(
-                        AuthenticationEvent.AuthenticationWithUserAndPassword,
-                        true
-                    )
-                    view.saveSmartLockCredentials(usernameOrEmail, password)
-                    navigator.toChatList()
-                }
+                onUserAuthenticated(myself, token, usernameOrEmail, password)
             } catch (exception: RocketChatException) {
-                when (exception) {
-                    is RocketChatTwoFactorException -> {
-                        navigator.toTwoFA(usernameOrEmail, password)
-                    }
-                    else -> {
-                        analyticsManager.logLogin(
-                            AuthenticationEvent.AuthenticationWithUserAndPassword,
-                            false
-                        )
-                        exception.message?.let {
-                            view.showMessage(it)
-                        }.ifNull {
-                            view.showGenericErrorMessage()
-                        }
-                    }
-                }
+               handleAuthenticationError(exception, usernameOrEmail, password)
             } finally {
                 view.hideLoading()
             }
         }
+    }
 
+    private fun onUserAuthenticated(
+        myself: Myself,
+        token: Token,
+        usernameOrEmail: String,
+        password: String
+    ) {
+        val username = myself.username ?: return
+        val user = User(
+            id = myself.id,
+            roles = myself.roles,
+            status = myself.status,
+            name = myself.name,
+            emails = myself.emails?.map { Email(it.address ?: "", it.verified) },
+            username = myself.username,
+            utcOffset = myself.utcOffset
+        )
+        localRepository.saveCurrentUser(currentServer, user)
+        saveCurrentServer.save(currentServer)
+        localRepository.save(LocalRepository.CURRENT_USERNAME_KEY, myself.username)
+
+        saveAccount(username)
+        saveToken(token)
+
+        analyticsManager.logLogin(AuthenticationEvent.AuthenticationWithUserAndPassword, true)
+        view.saveSmartLockCredentials(usernameOrEmail, password)
+        navigator.toChatList()
+    }
+
+    private fun handleAuthenticationError(
+        error: RocketChatException,
+        usernameOrEmail: String,
+        password: String
+    ) {
+        when (error) {
+            is RocketChatTwoFactorException -> {
+                navigator.toTwoFA(usernameOrEmail, password)
+            }
+            else -> {
+                analyticsManager.logLogin(
+                    AuthenticationEvent.AuthenticationWithUserAndPassword,
+                    false
+                )
+                error.message?.let { view.showMessage(it) }.ifNull { view.showGenericErrorMessage() }
+            }
+        }
     }
 
     fun forgotPassword() = navigator.toForgotPassword()
