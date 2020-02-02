@@ -83,37 +83,21 @@ class EmojiKeyboardPopup(context: Context, view: View) : OverKeyboardPopupWindow
             .create()
 
         with(view) {
-            image_view_default_tone.setOnClickListener {
-                dialog.dismiss()
-                changeSkinTone(Fitzpatrick.Default)
-            }
-
-            image_view_light_tone.setOnClickListener {
-                dialog.dismiss()
-                changeSkinTone(Fitzpatrick.LightTone)
-            }
-
-            image_view_medium_light.setOnClickListener {
-                dialog.dismiss()
-                changeSkinTone(Fitzpatrick.MediumLightTone)
-            }
-
-            image_view_medium_tone.setOnClickListener {
-                dialog.dismiss()
-                changeSkinTone(Fitzpatrick.MediumTone)
-            }
-
-            image_view_medium_dark_tone.setOnClickListener {
-                dialog.dismiss()
-                changeSkinTone(Fitzpatrick.MediumDarkTone)
-            }
-
-            image_view_dark_tone.setOnClickListener {
-                dialog.dismiss()
-                changeSkinTone(Fitzpatrick.DarkTone)
+            val toSkinTones = arrayOf(
+                Pair(image_view_default_tone, Fitzpatrick.Default),
+                Pair(image_view_light_tone, Fitzpatrick.LightTone),
+                Pair(image_view_medium_light, Fitzpatrick.MediumLightTone),
+                Pair(image_view_medium_tone, Fitzpatrick.MediumTone),
+                Pair(image_view_medium_dark_tone, Fitzpatrick.MediumDarkTone),
+                Pair(image_view_dark_tone, Fitzpatrick.DarkTone)
+            )
+            for (toSkinTone in toSkinTones) {
+                toSkinTone.first.setOnClickListener {
+                    dialog.dismiss()
+                    changeSkinTone(toSkinTone.second)
+                }
             }
         }
-
         dialog.show()
     }
 
@@ -148,27 +132,7 @@ class EmojiKeyboardPopup(context: Context, view: View) : OverKeyboardPopupWindow
 
     private suspend fun setupViewPager() {
         context.let {
-            val callback: EmojiKeyboardListener? = when (it) {
-                is EmojiKeyboardListener -> it
-                else -> {
-                    val fragments = (it as AppCompatActivity).supportFragmentManager.fragments
-                    if (fragments.size == 0 || fragments[0] !is EmojiKeyboardListener) {
-                        // Since the app can arrive in an inconsistent state at this point, do not throw
-                        // throw IllegalStateException("activity/fragment should implement Listener interface")
-                        null
-                    } else {
-                        fragments[0] as EmojiKeyboardListener
-                    }
-                }
-            }
-
-            adapter = EmojiPagerAdapter(object : EmojiKeyboardListener {
-                override fun onEmojiAdded(emoji: Emoji) {
-                    EmojiRepository.addToRecents(emoji)
-                    callback?.onEmojiAdded(emoji)
-                }
-            })
-
+            setupViewPagerAdapter(it)
             viewPager.offscreenPageLimit = EmojiCategory.values().size
             viewPager.adapter = adapter
 
@@ -187,6 +151,29 @@ class EmojiKeyboardPopup(context: Context, view: View) : OverKeyboardPopupWindow
             }
             viewPager.currentItem = currentTab
         }
+    }
+
+    private fun setupViewPagerAdapter(context: Context) {
+        val callback: EmojiKeyboardListener? = when (context) {
+            is EmojiKeyboardListener -> context
+            else -> {
+                val fragments = (context as AppCompatActivity).supportFragmentManager.fragments
+
+                if (fragments.size == 0 || fragments[0] !is EmojiKeyboardListener) {
+                    // Since the app can arrive in an inconsistent state at this point, do not throw
+                    // throw IllegalStateException("activity/fragment should implement Listener interface")
+                    null
+                } else {
+                    fragments[0] as EmojiKeyboardListener
+                }
+            }
+        }
+        adapter = EmojiPagerAdapter(object : EmojiKeyboardListener {
+            override fun onEmojiAdded(emoji: Emoji) {
+                EmojiRepository.addToRecents(emoji)
+                callback?.onEmojiAdded(emoji)
+            }
+        })
     }
 
     class EmojiTextWatcher(private val editor: EditText) : TextWatcher {
