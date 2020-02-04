@@ -25,6 +25,7 @@ import chat.rocket.android.authentication.domain.model.DeepLinkInfo
 import chat.rocket.android.authentication.loginoptions.presentation.LoginOptionsPresenter
 import chat.rocket.android.authentication.loginoptions.presentation.LoginOptionsView
 import chat.rocket.android.authentication.ui.AuthenticationActivity
+import chat.rocket.android.server.domain.model.AuthOptions
 import chat.rocket.android.util.extensions.*
 import chat.rocket.android.webview.oauth.ui.INTENT_OAUTH_CREDENTIAL_SECRET
 import chat.rocket.android.webview.oauth.ui.INTENT_OAUTH_CREDENTIAL_TOKEN
@@ -71,61 +72,37 @@ private const val DEFAULT_ANIMATION_DURATION = 400L
 
 fun newInstance(
     serverName: String,
-    state: String? = null,
-    facebookOauthUrl: String? = null,
-    githubOauthUrl: String? = null,
-    googleOauthUrl: String? = null,
-    linkedinOauthUrl: String? = null,
-    gitlabOauthUrl: String? = null,
-    wordpressOauthUrl: String? = null,
-    casLoginUrl: String? = null,
-    casToken: String? = null,
-    casServiceName: String? = null,
-    casServiceNameTextColor: Int = 0,
-    casServiceButtonColor: Int = 0,
-    customOauthUrl: String? = null,
-    customOauthServiceName: String? = null,
-    customOauthServiceNameTextColor: Int = 0,
-    customOauthServiceButtonColor: Int = 0,
-    samlUrl: String? = null,
-    samlToken: String? = null,
-    samlServiceName: String? = null,
-    samlServiceNameTextColor: Int = 0,
-    samlServiceButtonColor: Int = 0,
-    totalSocialAccountsEnabled: Int = 0,
-    isLoginFormEnabled: Boolean,
-    isNewAccountCreationEnabled: Boolean,
-    deepLinkInfo: DeepLinkInfo? = null
+    authOptions: AuthOptions
 ): Fragment = LoginOptionsFragment().apply {
     arguments = Bundle(23).apply {
         putString(SERVER_NAME, serverName)
-        putString(STATE, state)
-        putString(FACEBOOK_OAUTH_URL, facebookOauthUrl)
-        putString(GITHUB_OAUTH_URL, githubOauthUrl)
-        putString(GOOGLE_OAUTH_URL, googleOauthUrl)
-        putString(LINKEDIN_OAUTH_URL, linkedinOauthUrl)
-        putString(GITLAB_OAUTH_URL, gitlabOauthUrl)
-        putString(WORDPRESS_OAUTH_URL, wordpressOauthUrl)
-        putString(CAS_LOGIN_URL, casLoginUrl)
-        putString(CAS_TOKEN, casToken)
-        putString(CAS_SERVICE_NAME, casServiceName)
-        putInt(CAS_SERVICE_NAME_TEXT_COLOR, casServiceNameTextColor)
-        putInt(CAS_SERVICE_BUTTON_COLOR, casServiceButtonColor)
-        putString(CUSTOM_OAUTH_URL, customOauthUrl)
-        putString(CUSTOM_OAUTH_SERVICE_NAME, customOauthServiceName)
-        putInt(CUSTOM_OAUTH_SERVICE_NAME_TEXT_COLOR, customOauthServiceNameTextColor)
-        putInt(CUSTOM_OAUTH_SERVICE_BUTTON_COLOR, customOauthServiceButtonColor)
-        putString(SAML_URL, samlUrl)
-        putString(SAML_TOKEN, samlToken)
-        putString(SAML_SERVICE_NAME, samlServiceName)
-        putInt(SAML_SERVICE_NAME_TEXT_COLOR, samlServiceNameTextColor)
-        putInt(SAML_SERVICE_BUTTON_COLOR, samlServiceButtonColor)
-        putInt(TOTAL_SOCIAL_ACCOUNTS, totalSocialAccountsEnabled)
-        putBoolean(IS_LOGIN_FORM_ENABLED, isLoginFormEnabled)
-        putBoolean(IS_NEW_ACCOUNT_CREATION_ENABLED, isNewAccountCreationEnabled)
+        putString(STATE, authOptions.state)
+        putString(FACEBOOK_OAUTH_URL, authOptions.facebookOauthUrl)
+        putString(GITHUB_OAUTH_URL, authOptions.githubOauthUrl)
+        putString(GOOGLE_OAUTH_URL, authOptions.googleOauthUrl)
+        putString(LINKEDIN_OAUTH_URL, authOptions.linkedinOauthUrl)
+        putString(GITLAB_OAUTH_URL, authOptions.gitlabOauthUrl)
+        putString(WORDPRESS_OAUTH_URL, authOptions.wordpressOauthUrl)
+        putString(CAS_LOGIN_URL, authOptions.casLoginUrl)
+        putString(CAS_TOKEN, authOptions.casToken)
+        putString(CAS_SERVICE_NAME, authOptions.casServiceName)
+        putInt(CAS_SERVICE_NAME_TEXT_COLOR, authOptions.casServiceNameTextColor)
+        putInt(CAS_SERVICE_BUTTON_COLOR, authOptions.casServiceButtonColor)
+        putString(CUSTOM_OAUTH_URL, authOptions.customOauthUrl)
+        putString(CUSTOM_OAUTH_SERVICE_NAME, authOptions.customOauthServiceName)
+        putInt(CUSTOM_OAUTH_SERVICE_NAME_TEXT_COLOR, authOptions.customOauthServiceNameTextColor)
+        putInt(CUSTOM_OAUTH_SERVICE_BUTTON_COLOR, authOptions.customOauthServiceButtonColor)
+        putString(SAML_URL, authOptions.samlUrl)
+        putString(SAML_TOKEN, authOptions.samlToken)
+        putString(SAML_SERVICE_NAME, authOptions.samlServiceName)
+        putInt(SAML_SERVICE_NAME_TEXT_COLOR, authOptions.samlServiceNameTextColor)
+        putInt(SAML_SERVICE_BUTTON_COLOR, authOptions.samlServiceButtonColor)
+        putInt(TOTAL_SOCIAL_ACCOUNTS, authOptions.totalSocialAccountsEnabled)
+        putBoolean(IS_LOGIN_FORM_ENABLED, authOptions.isLoginFormEnabled)
+        putBoolean(IS_NEW_ACCOUNT_CREATION_ENABLED, authOptions.isNewAccountCreationEnabled)
         putParcelable(
             chat.rocket.android.authentication.domain.model.DEEP_LINK_INFO_KEY,
-            deepLinkInfo
+            authOptions.deepLinkInfo
         )
     }
 }
@@ -136,31 +113,7 @@ class LoginOptionsFragment : Fragment(), LoginOptionsView {
     @Inject
     lateinit var analyticsManager: AnalyticsManager
     private var serverName: String? = null
-    private var state: String? = null
-    private var facebookOauthUrl: String? = null
-    private var githubOauthUrl: String? = null
-    private var googleOauthUrl: String? = null
-    private var linkedinOauthUrl: String? = null
-    private var gitlabOauthUrl: String? = null
-    private var wordpressOauthUrl: String? = null
-    private var casLoginUrl: String? = null
-    private var casToken: String? = null
-    private var casServiceName: String? = null
-    private var casServiceNameTextColor: Int = 0
-    private var casServiceButtonColor: Int = 0
-    private var customOauthUrl: String? = null
-    private var customOauthServiceName: String? = null
-    private var customOauthServiceTextColor: Int = 0
-    private var customOauthServiceButtonColor: Int = 0
-    private var samlUrl: String? = null
-    private var samlToken: String? = null
-    private var samlServiceName: String? = null
-    private var samlServiceTextColor: Int = 0
-    private var samlServiceButtonColor: Int = 0
-    private var totalSocialAccountsEnabled = 0
-    private var isLoginFormEnabled = false
-    private var isNewAccountCreationEnabled = false
-    private var deepLinkInfo: DeepLinkInfo? = null
+    private val authOptions: AuthOptions = AuthOptions()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -168,31 +121,31 @@ class LoginOptionsFragment : Fragment(), LoginOptionsView {
 
         arguments?.run {
             serverName = getString(SERVER_NAME)
-            state = getString(STATE)
-            facebookOauthUrl = getString(FACEBOOK_OAUTH_URL)
-            githubOauthUrl = getString(GITHUB_OAUTH_URL)
-            googleOauthUrl = getString(GOOGLE_OAUTH_URL)
-            linkedinOauthUrl = getString(LINKEDIN_OAUTH_URL)
-            gitlabOauthUrl = getString(GITLAB_OAUTH_URL)
-            wordpressOauthUrl = getString(WORDPRESS_OAUTH_URL)
-            casLoginUrl = getString(CAS_LOGIN_URL)
-            casToken = getString(CAS_TOKEN)
-            casServiceName = getString(CAS_SERVICE_NAME)
-            casServiceNameTextColor = getInt(CAS_SERVICE_NAME_TEXT_COLOR)
-            casServiceButtonColor = getInt(CAS_SERVICE_BUTTON_COLOR)
-            customOauthUrl = getString(CUSTOM_OAUTH_URL)
-            customOauthServiceName = getString(CUSTOM_OAUTH_SERVICE_NAME)
-            customOauthServiceTextColor = getInt(CUSTOM_OAUTH_SERVICE_NAME_TEXT_COLOR)
-            customOauthServiceButtonColor = getInt(CUSTOM_OAUTH_SERVICE_BUTTON_COLOR)
-            samlUrl = getString(SAML_URL)
-            samlToken = getString(SAML_TOKEN)
-            samlServiceName = getString(SAML_SERVICE_NAME)
-            samlServiceTextColor = getInt(SAML_SERVICE_NAME_TEXT_COLOR)
-            samlServiceButtonColor = getInt(SAML_SERVICE_BUTTON_COLOR)
-            totalSocialAccountsEnabled = getInt(TOTAL_SOCIAL_ACCOUNTS)
-            isLoginFormEnabled = getBoolean(IS_LOGIN_FORM_ENABLED)
-            isNewAccountCreationEnabled = getBoolean(IS_NEW_ACCOUNT_CREATION_ENABLED)
-            deepLinkInfo =
+            authOptions.state = getString(STATE)
+            authOptions.facebookOauthUrl = getString(FACEBOOK_OAUTH_URL)
+            authOptions.githubOauthUrl = getString(GITHUB_OAUTH_URL)
+            authOptions.googleOauthUrl = getString(GOOGLE_OAUTH_URL)
+            authOptions.linkedinOauthUrl = getString(LINKEDIN_OAUTH_URL)
+            authOptions.gitlabOauthUrl = getString(GITLAB_OAUTH_URL)
+            authOptions.wordpressOauthUrl = getString(WORDPRESS_OAUTH_URL)
+            authOptions.casLoginUrl = getString(CAS_LOGIN_URL)
+            authOptions.casToken = getString(CAS_TOKEN)
+            authOptions.casServiceName = getString(CAS_SERVICE_NAME)
+            authOptions.casServiceNameTextColor = getInt(CAS_SERVICE_NAME_TEXT_COLOR)
+            authOptions.casServiceButtonColor = getInt(CAS_SERVICE_BUTTON_COLOR)
+            authOptions.customOauthUrl = getString(CUSTOM_OAUTH_URL)
+            authOptions.customOauthServiceName = getString(CUSTOM_OAUTH_SERVICE_NAME)
+            authOptions.customOauthServiceNameTextColor = getInt(CUSTOM_OAUTH_SERVICE_NAME_TEXT_COLOR)
+            authOptions.customOauthServiceButtonColor = getInt(CUSTOM_OAUTH_SERVICE_BUTTON_COLOR)
+            authOptions.samlUrl = getString(SAML_URL)
+            authOptions.samlToken = getString(SAML_TOKEN)
+            authOptions.samlServiceName = getString(SAML_SERVICE_NAME)
+            authOptions.samlServiceNameTextColor = getInt(SAML_SERVICE_NAME_TEXT_COLOR)
+            authOptions.samlServiceButtonColor = getInt(SAML_SERVICE_BUTTON_COLOR)
+            authOptions.totalSocialAccountsEnabled = getInt(TOTAL_SOCIAL_ACCOUNTS)
+            authOptions.isLoginFormEnabled = getBoolean(IS_LOGIN_FORM_ENABLED)
+            authOptions.isNewAccountCreationEnabled = getBoolean(IS_NEW_ACCOUNT_CREATION_ENABLED)
+            authOptions.deepLinkInfo =
                 getParcelable(chat.rocket.android.authentication.domain.model.DEEP_LINK_INFO_KEY)
         }
     }
@@ -208,7 +161,7 @@ class LoginOptionsFragment : Fragment(), LoginOptionsView {
         setupToolbar()
         setupAccounts()
         analyticsManager.logScreenView(ScreenViewEvent.LoginOptions)
-        deepLinkInfo?.let { presenter.authenticateWithDeepLink(it) }
+        authOptions.deepLinkInfo?.let { presenter.authenticateWithDeepLink(it) }
     }
 
     private fun setupToolbar() {
@@ -230,90 +183,90 @@ class LoginOptionsFragment : Fragment(), LoginOptionsView {
     }
 
     private fun setupSocialAccounts() {
-        if (facebookOauthUrl != null && state != null) {
-            setupFacebookButtonListener(facebookOauthUrl.toString(), state.toString())
+        if (authOptions.facebookOauthUrl != null && authOptions.state != null) {
+            setupFacebookButtonListener(authOptions.facebookOauthUrl.toString(), authOptions.state.toString())
             enableLoginByFacebook()
         }
 
-        if (githubOauthUrl != null && state != null) {
-            setupGithubButtonListener(githubOauthUrl.toString(), state.toString())
+        if (authOptions.githubOauthUrl != null && authOptions.state != null) {
+            setupGithubButtonListener(authOptions.githubOauthUrl.toString(), authOptions.state.toString())
             enableLoginByGithub()
         }
 
-        if (googleOauthUrl != null && state != null) {
-            setupGoogleButtonListener(googleOauthUrl.toString(), state.toString())
+        if (authOptions.googleOauthUrl != null && authOptions.state != null) {
+            setupGoogleButtonListener(authOptions.googleOauthUrl.toString(), authOptions.state.toString())
             enableLoginByGoogle()
         }
 
-        if (linkedinOauthUrl != null && state != null) {
-            setupLinkedinButtonListener(linkedinOauthUrl.toString(), state.toString())
+        if (authOptions.linkedinOauthUrl != null && authOptions.state != null) {
+            setupLinkedinButtonListener(authOptions.linkedinOauthUrl.toString(), authOptions.state.toString())
             enableLoginByLinkedin()
         }
 
-        if (gitlabOauthUrl != null && state != null) {
-            setupGitlabButtonListener(gitlabOauthUrl.toString(), state.toString())
+        if (authOptions.gitlabOauthUrl != null && authOptions.state != null) {
+            setupGitlabButtonListener(authOptions.gitlabOauthUrl.toString(), authOptions.state.toString())
             enableLoginByGitlab()
         }
 
-        if (wordpressOauthUrl != null && state != null) {
-            setupWordpressButtonListener(wordpressOauthUrl.toString(), state.toString())
+        if (authOptions.wordpressOauthUrl != null && authOptions.state != null) {
+            setupWordpressButtonListener(authOptions.wordpressOauthUrl.toString(), authOptions.state.toString())
             enableLoginByWordpress()
         }
     }
 
     private fun setupCas() {
-        if (casLoginUrl != null && casToken != null && casServiceName != null) {
+        if (authOptions.casLoginUrl != null && authOptions.casToken != null && authOptions.casServiceName != null) {
             addCasButton(
-                casLoginUrl.toString(),
-                casToken.toString(),
-                casServiceName.toString(),
-                casServiceNameTextColor,
-                casServiceButtonColor
+                authOptions.casLoginUrl.toString(),
+                authOptions.casToken.toString(),
+                authOptions.casServiceName.toString(),
+                authOptions.casServiceNameTextColor,
+                authOptions.casServiceButtonColor
             )
         }
     }
 
     private fun setupCustomOauth() {
-        if (customOauthUrl != null && state != null && customOauthServiceName != null) {
+        if (authOptions.customOauthUrl != null && authOptions.state != null && authOptions.customOauthServiceName != null) {
             addCustomOauthButton(
-                customOauthUrl.toString(),
-                state.toString(),
-                customOauthServiceName.toString(),
-                customOauthServiceTextColor,
-                customOauthServiceButtonColor
+                authOptions.customOauthUrl.toString(),
+                authOptions.state.toString(),
+                authOptions.customOauthServiceName.toString(),
+                authOptions.customOauthServiceNameTextColor,
+                authOptions.customOauthServiceButtonColor
             )
         }
     }
 
     private fun setupSaml() {
-        if (samlUrl != null && samlToken != null && samlServiceName != null) {
+        if (authOptions.samlUrl != null && authOptions.samlToken != null && authOptions.samlServiceName != null) {
             addSamlButton(
-                samlUrl.toString(),
-                samlToken.toString(),
-                samlServiceName.toString(),
-                samlServiceTextColor,
-                samlServiceButtonColor
+                authOptions.samlUrl.toString(),
+                authOptions.samlToken.toString(),
+                authOptions.samlServiceName.toString(),
+                authOptions.samlServiceNameTextColor,
+                authOptions.samlServiceButtonColor
             )
         }
     }
 
     private fun setupAccountsView() {
-        if (totalSocialAccountsEnabled > 0) {
+        if (authOptions.totalSocialAccountsEnabled > 0) {
             showAccountsView()
-            if (totalSocialAccountsEnabled > 3) {
+            if (authOptions.totalSocialAccountsEnabled > 3) {
                 setupExpandAccountsView()
             }
         }
     }
 
     private fun setupLoginWithEmailView() {
-        if (isLoginFormEnabled) {
+        if (authOptions.isLoginFormEnabled) {
             showLoginWithEmailButton()
         }
     }
 
     private fun setupCreateNewAccountView() {
-        if (isNewAccountCreationEnabled) {
+        if (authOptions.isNewAccountCreationEnabled) {
             showCreateNewAccountButton()
         }
     }

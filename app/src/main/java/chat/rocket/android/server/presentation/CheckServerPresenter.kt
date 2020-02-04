@@ -20,6 +20,7 @@ import chat.rocket.android.server.domain.isLinkedinAuthenticationEnabled
 import chat.rocket.android.server.domain.isLoginFormEnabled
 import chat.rocket.android.server.domain.isRegistrationEnabledForNewUsers
 import chat.rocket.android.server.domain.isWordpressAuthenticationEnabled
+import chat.rocket.android.server.domain.model.AuthOptions
 import chat.rocket.android.server.domain.wordpressUrl
 import chat.rocket.android.server.infrastructure.ConnectionManager
 import chat.rocket.android.server.infrastructure.ConnectionManagerFactory
@@ -61,30 +62,7 @@ abstract class CheckServerPresenter constructor(
     private lateinit var settings: PublicSettings
     private var connectionManager: ConnectionManager? = null
     private var dbManager: DatabaseManager? = null
-    internal var state: String = ""
-    internal var facebookOauthUrl: String? = null
-    internal var githubOauthUrl: String? = null
-    internal var googleOauthUrl: String? = null
-    internal var linkedinOauthUrl: String? = null
-    internal var gitlabOauthUrl: String? = null
-    internal var wordpressOauthUrl: String? = null
-    internal var casLoginUrl: String? = null
-    internal var casToken: String? = null
-    internal var casServiceName: String? = null
-    internal var casServiceNameTextColor: Int = 0
-    internal var casServiceButtonColor: Int = 0
-    internal var customOauthUrl: String? = null
-    internal var customOauthServiceName: String? = null
-    internal var customOauthServiceNameTextColor: Int = 0
-    internal var customOauthServiceButtonColor: Int = 0
-    internal var samlUrl: String? = null
-    internal var samlToken: String? = null
-    internal var samlServiceName: String? = null
-    internal var samlServiceNameTextColor: Int = 0
-    internal var samlServiceButtonColor: Int = 0
-    internal var totalSocialAccountsEnabled = 0
-    internal var isLoginFormEnabled = false
-    internal var isNewAccountCreationEnabled = false
+    internal val authOptions: AuthOptions = AuthOptions()
 
     internal fun setupConnectionInfo(serverUrl: String) {
         currentServer = serverUrl
@@ -103,31 +81,7 @@ abstract class CheckServerPresenter constructor(
         settingsInteractor?.get(currentServer)?.let {
             settings = it
         }
-
-        state = ""
-        facebookOauthUrl = null
-        githubOauthUrl = null
-        googleOauthUrl = null
-        linkedinOauthUrl = null
-        gitlabOauthUrl = null
-        wordpressOauthUrl = null
-        casLoginUrl = null
-        casToken = null
-        casServiceName = null
-        casServiceNameTextColor = 0
-        casServiceButtonColor = 0
-        customOauthUrl = null
-        customOauthServiceName = null
-        customOauthServiceNameTextColor = 0
-        customOauthServiceButtonColor= 0
-        samlUrl = null
-        samlToken = null
-        samlServiceName = null
-        samlServiceNameTextColor = 0
-        samlServiceButtonColor = 0
-        totalSocialAccountsEnabled = 0
-        isLoginFormEnabled = false
-        isNewAccountCreationEnabled = false
+        authOptions.reset()
     }
 
     internal fun checkServerInfo(serverUrl: String): Job {
@@ -170,7 +124,7 @@ abstract class CheckServerPresenter constructor(
             retryIO("settingsOauth()") {
                 client?.settingsOauth()?.services?.let { services ->
                     if (services.isNotEmpty()) {
-                        state = OauthHelper.getState()
+                        authOptions.state = OauthHelper.getState()
                         checkEnabledOauthAccounts(services, serverUrl)
                         checkEnabledCasAccounts(services, serverUrl)
                         checkEnabledCustomOauthAccounts(services, serverUrl)
@@ -187,9 +141,9 @@ abstract class CheckServerPresenter constructor(
         if (settings.isFacebookAuthenticationEnabled()) {
             getServiceMap(services, SERVICE_NAME_FACEBOOK)?.let { serviceMap ->
                 getOauthClientId(serviceMap)?.let { clientId ->
-                    facebookOauthUrl =
-                            OauthHelper.getFacebookOauthUrl(clientId, serverUrl, state)
-                    totalSocialAccountsEnabled++
+                    authOptions.facebookOauthUrl =
+                            OauthHelper.getFacebookOauthUrl(clientId, serverUrl, authOptions.state ?: "")
+                    authOptions.totalSocialAccountsEnabled++
                 }
             }
         }
@@ -197,9 +151,9 @@ abstract class CheckServerPresenter constructor(
         if (settings.isGithubAuthenticationEnabled()) {
             getServiceMap(services, SERVICE_NAME_GITHUB)?.let { serviceMap ->
                 getOauthClientId(serviceMap)?.let { clientId ->
-                    githubOauthUrl =
-                            OauthHelper.getGithubOauthUrl(clientId, state)
-                    totalSocialAccountsEnabled++
+                    authOptions.githubOauthUrl =
+                            OauthHelper.getGithubOauthUrl(clientId, authOptions.state ?: "")
+                    authOptions.totalSocialAccountsEnabled++
                 }
             }
         }
@@ -207,9 +161,9 @@ abstract class CheckServerPresenter constructor(
         if (settings.isGoogleAuthenticationEnabled()) {
             getServiceMap(services, SERVICE_NAME_GOOGLE)?.let { serviceMap ->
                 getOauthClientId(serviceMap)?.let { clientId ->
-                    googleOauthUrl =
-                            OauthHelper.getGoogleOauthUrl(clientId, serverUrl, state)
-                    totalSocialAccountsEnabled++
+                    authOptions.googleOauthUrl =
+                            OauthHelper.getGoogleOauthUrl(clientId, serverUrl, authOptions.state ?: "")
+                    authOptions.totalSocialAccountsEnabled++
                 }
             }
         }
@@ -217,9 +171,9 @@ abstract class CheckServerPresenter constructor(
         if (settings.isLinkedinAuthenticationEnabled()) {
             getServiceMap(services, SERVICE_NAME_LINKEDIN)?.let { serviceMap ->
                 getOauthClientId(serviceMap)?.let { clientId ->
-                    linkedinOauthUrl =
-                            OauthHelper.getLinkedinOauthUrl(clientId, serverUrl, state)
-                    totalSocialAccountsEnabled++
+                    authOptions.linkedinOauthUrl =
+                            OauthHelper.getLinkedinOauthUrl(clientId, serverUrl, authOptions.state ?: "")
+                    authOptions.totalSocialAccountsEnabled++
                 }
             }
         }
@@ -227,21 +181,21 @@ abstract class CheckServerPresenter constructor(
         if (settings.isGitlabAuthenticationEnabled()) {
             getServiceMap(services, SERVICE_NAME_GILAB)?.let { serviceMap ->
                 getOauthClientId(serviceMap)?.let { clientId ->
-                    gitlabOauthUrl = if (settings.gitlabUrl() != null) {
+                    authOptions.gitlabOauthUrl = if (settings.gitlabUrl() != null) {
                         OauthHelper.getGitlabOauthUrl(
                             host = settings.gitlabUrl(),
                             clientId = clientId,
                             serverUrl = serverUrl,
-                            state = state
+                            state = authOptions.state ?: ""
                         )
                     } else {
                         OauthHelper.getGitlabOauthUrl(
                             clientId = clientId,
                             serverUrl = serverUrl,
-                            state = state
+                            state = authOptions.state ?: ""
                         )
                     }
-                    totalSocialAccountsEnabled++
+                    authOptions.totalSocialAccountsEnabled++
                 }
             }
         }
@@ -249,12 +203,12 @@ abstract class CheckServerPresenter constructor(
         if (settings.isWordpressAuthenticationEnabled()) {
             getServiceMap(services, SERVICE_NAME_WORDPRESS)?.let { serviceMap ->
                 getOauthClientId(serviceMap)?.let { clientId ->
-                    wordpressOauthUrl =
+                    authOptions.wordpressOauthUrl =
                             if (settings.wordpressUrl().isNullOrEmpty()) {
                                 OauthHelper.getWordpressComOauthUrl(
                                     clientId,
                                     serverUrl,
-                                    state
+                                    authOptions.state ?: ""
                                 )
                             } else {
                                 OauthHelper.getWordpressCustomOauthUrl(
@@ -265,11 +219,11 @@ abstract class CheckServerPresenter constructor(
                                     clientId,
                                     serverUrl,
                                     SERVICE_NAME_WORDPRESS,
-                                    state,
+                                authOptions.state ?: "",
                                     getCustomOauthScope(serviceMap) ?: "openid"
                                 )
                             }
-                    totalSocialAccountsEnabled++
+                    authOptions.totalSocialAccountsEnabled++
                 }
             }
         }
@@ -277,20 +231,21 @@ abstract class CheckServerPresenter constructor(
 
     private fun checkEnabledCasAccounts(services: List<Map<String,Any>>, serverUrl: String) {
         if (settings.isCasAuthenticationEnabled()) {
-            casToken = generateRandomString(17)
-            casLoginUrl = settings.casLoginUrl().casUrl(serverUrl, casToken.toString())
+            authOptions.casToken = generateRandomString(17)
+            authOptions.casLoginUrl = settings.casLoginUrl().casUrl(serverUrl, authOptions.casToken.toString())
             getCasServices(services).let {
                 for (serviceMap in it) {
-                    casServiceName = getServiceName(serviceMap)
+                    authOptions.casServiceName = getServiceName(serviceMap)
                     val serviceNameTextColor = getServiceNameColor(serviceMap)
                     val serviceButtonColor = getServiceButtonColor(serviceMap)
-                    if (casServiceName != null &&
+
+                    if (authOptions.casServiceName != null &&
                         serviceNameTextColor != null &&
                         serviceButtonColor != null
                     ) {
-                        casServiceNameTextColor = serviceNameTextColor
-                        casServiceButtonColor = serviceButtonColor
-                        totalSocialAccountsEnabled++
+                        authOptions.casServiceNameTextColor = serviceNameTextColor
+                        authOptions.casServiceButtonColor = serviceButtonColor
+                        authOptions.totalSocialAccountsEnabled++
                     }
                 }
             }
@@ -300,7 +255,7 @@ abstract class CheckServerPresenter constructor(
     private fun checkEnabledCustomOauthAccounts(services: List<Map<String,Any>>, serverUrl: String) {
         getCustomOauthServices(services).let {
             for (serviceMap in it) {
-                customOauthServiceName = getCustomOauthServiceName(serviceMap)
+                authOptions.customOauthServiceName = getCustomOauthServiceName(serviceMap)
                 val host = getCustomOauthHost(serviceMap)
                 val authorizePath = getCustomOauthAuthorizePath(serviceMap)
                 val clientId = getOauthClientId(serviceMap)
@@ -309,7 +264,7 @@ abstract class CheckServerPresenter constructor(
                     getServiceNameColor(serviceMap)
                 val serviceButtonColor = getServiceButtonColor(serviceMap)
 
-                if (customOauthServiceName != null &&
+                if (authOptions.customOauthServiceName != null &&
                     host != null &&
                     authorizePath != null &&
                     clientId != null &&
@@ -317,18 +272,18 @@ abstract class CheckServerPresenter constructor(
                     serviceNameTextColor != null &&
                     serviceButtonColor != null
                 ) {
-                    customOauthUrl = OauthHelper.getCustomOauthUrl(
+                    authOptions.customOauthUrl = OauthHelper.getCustomOauthUrl(
                         host,
                         authorizePath,
                         clientId,
                         serverUrl,
-                        customOauthServiceName.toString(),
-                        state,
+                        authOptions.customOauthServiceName.toString(),
+                        authOptions.state ?: "",
                         scope
                     )
-                    customOauthServiceNameTextColor = serviceNameTextColor
-                    customOauthServiceButtonColor = serviceButtonColor
-                    totalSocialAccountsEnabled++
+                    authOptions.customOauthServiceNameTextColor = serviceNameTextColor
+                    authOptions.customOauthServiceButtonColor = serviceButtonColor
+                    authOptions.totalSocialAccountsEnabled++
                 }
             }
         }
@@ -336,23 +291,23 @@ abstract class CheckServerPresenter constructor(
 
     private fun checkEnabledSamlAccounts(services: List<Map<String,Any>>, serverUrl: String) {
         getSamlServices(services).let {
-            samlToken = generateRandomString(17)
+            authOptions.samlToken = generateRandomString(17)
             for (serviceMap in it) {
                 val provider = getSamlProvider(serviceMap)
-                samlServiceName = getServiceName(serviceMap)
+                authOptions.samlServiceName = getServiceName(serviceMap)
                 val serviceNameTextColor =
                     getServiceNameColor(serviceMap)
                 val serviceButtonColor = getServiceButtonColor(serviceMap)
 
                 if (provider != null &&
-                    samlServiceName != null &&
+                    authOptions.samlServiceName != null &&
                     serviceNameTextColor != null &&
                     serviceButtonColor != null
                 ) {
-                    samlUrl = serverUrl.samlUrl(provider, samlToken.toString())
-                    samlServiceNameTextColor = serviceNameTextColor
-                    samlServiceButtonColor = serviceButtonColor
-                    totalSocialAccountsEnabled++
+                    authOptions.samlUrl = serverUrl.samlUrl(provider, authOptions.samlToken.toString())
+                    authOptions.samlServiceNameTextColor = serviceNameTextColor
+                    authOptions.samlServiceButtonColor = serviceButtonColor
+                    authOptions.totalSocialAccountsEnabled++
                 }
             }
         }
@@ -360,13 +315,13 @@ abstract class CheckServerPresenter constructor(
 
     internal fun checkIfLoginFormIsEnabled() {
         if (settings.isLoginFormEnabled()) {
-            isLoginFormEnabled = true
+            authOptions.isLoginFormEnabled = true
         }
     }
 
     internal fun checkIfCreateNewAccountIsEnabled() {
         if (settings.isRegistrationEnabledForNewUsers() && settings.isLoginFormEnabled()) {
-            isNewAccountCreationEnabled = true
+            authOptions.isNewAccountCreationEnabled = true
         }
     }
 

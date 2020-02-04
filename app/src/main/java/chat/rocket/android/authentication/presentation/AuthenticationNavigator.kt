@@ -6,6 +6,7 @@ import chat.rocket.android.analytics.event.ScreenViewEvent
 import chat.rocket.android.authentication.domain.model.DeepLinkInfo
 import chat.rocket.android.authentication.ui.AuthenticationActivity
 import chat.rocket.android.main.ui.MainActivity
+import chat.rocket.android.server.domain.model.AuthOptions
 import chat.rocket.android.server.ui.changeServerIntent
 import chat.rocket.android.util.extensions.addFragment
 import chat.rocket.android.util.extensions.addFragmentBackStack
@@ -50,31 +51,7 @@ class AuthenticationNavigator(internal val activity: AuthenticationActivity) {
 
     fun toLoginOptions(
         serverUrl: String,
-        state: String? = null,
-        facebookOauthUrl: String? = null,
-        githubOauthUrl: String? = null,
-        googleOauthUrl: String? = null,
-        linkedinOauthUrl: String? = null,
-        gitlabOauthUrl: String? = null,
-        wordpressOauthUrl: String? = null,
-        casLoginUrl: String? = null,
-        casToken: String? = null,
-        casServiceName: String? = null,
-        casServiceNameTextColor: Int = 0,
-        casServiceButtonColor: Int = 0,
-        customOauthUrl: String? = null,
-        customOauthServiceName: String? = null,
-        customOauthServiceNameTextColor: Int = 0,
-        customOauthServiceButtonColor: Int = 0,
-        samlUrl: String? = null,
-        samlToken: String? = null,
-        samlServiceName: String? = null,
-        samlServiceNameTextColor: Int = 0,
-        samlServiceButtonColor: Int = 0,
-        totalSocialAccountsEnabled: Int = 0,
-        isLoginFormEnabled: Boolean = true,
-        isNewAccountCreationEnabled: Boolean = true,
-        deepLinkInfo: DeepLinkInfo? = null
+        authOptions: AuthOptions
     ) {
         activity.addFragmentBackStack(
             ScreenViewEvent.LoginOptions.screenName,
@@ -82,31 +59,7 @@ class AuthenticationNavigator(internal val activity: AuthenticationActivity) {
         ) {
             chat.rocket.android.authentication.loginoptions.ui.newInstance(
                 serverUrl,
-                state,
-                facebookOauthUrl,
-                githubOauthUrl,
-                googleOauthUrl,
-                linkedinOauthUrl,
-                gitlabOauthUrl,
-                wordpressOauthUrl,
-                casLoginUrl,
-                casToken,
-                casServiceName,
-                casServiceNameTextColor,
-                casServiceButtonColor,
-                customOauthUrl,
-                customOauthServiceName,
-                customOauthServiceNameTextColor,
-                customOauthServiceButtonColor,
-                samlUrl,
-                samlToken,
-                samlServiceName,
-                samlServiceNameTextColor,
-                samlServiceButtonColor,
-                totalSocialAccountsEnabled,
-                isLoginFormEnabled,
-                isNewAccountCreationEnabled,
-                deepLinkInfo
+                authOptions
             )
         }
     }

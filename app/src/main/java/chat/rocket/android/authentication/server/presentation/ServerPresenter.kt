@@ -8,6 +8,7 @@ import chat.rocket.android.server.domain.GetAccountsInteractor
 import chat.rocket.android.server.domain.GetSettingsInteractor
 import chat.rocket.android.server.domain.RefreshSettingsInteractor
 import chat.rocket.android.server.domain.SaveConnectingServerInteractor
+import chat.rocket.android.server.domain.model.AuthOptions
 import chat.rocket.android.server.infrastructure.RocketChatClientFactory
 import chat.rocket.android.server.presentation.CheckServerPresenter
 import chat.rocket.android.util.extension.launchUI
@@ -45,35 +46,12 @@ class ServerPresenter @Inject constructor(
 
     fun connect(serverUrl: String) {
         connectToServer(serverUrl) {
-            if (totalSocialAccountsEnabled == 0 && !isNewAccountCreationEnabled) {
+            if (authOptions.totalSocialAccountsEnabled == 0 && !authOptions.isNewAccountCreationEnabled) {
                 navigator.toLogin(serverUrl)
             } else {
                 navigator.toLoginOptions(
                     serverUrl,
-                    state,
-                    facebookOauthUrl,
-                    githubOauthUrl,
-                    googleOauthUrl,
-                    linkedinOauthUrl,
-                    gitlabOauthUrl,
-                    wordpressOauthUrl,
-                    casLoginUrl,
-                    casToken,
-                    casServiceName,
-                    casServiceNameTextColor,
-                    casServiceButtonColor,
-                    customOauthUrl,
-                    customOauthServiceName,
-                    customOauthServiceNameTextColor,
-                    customOauthServiceButtonColor,
-                    samlUrl,
-                    samlToken,
-                    samlServiceName,
-                    samlServiceNameTextColor,
-                    samlServiceButtonColor,
-                    totalSocialAccountsEnabled,
-                    isLoginFormEnabled,
-                    isNewAccountCreationEnabled
+                    authOptions
                 )
             }
         }
@@ -81,7 +59,7 @@ class ServerPresenter @Inject constructor(
 
     fun deepLink(deepLinkInfo: DeepLinkInfo) {
         connectToServer(deepLinkInfo.url) {
-            navigator.toLoginOptions(deepLinkInfo.url, deepLinkInfo = deepLinkInfo)
+            navigator.toLoginOptions(deepLinkInfo.url, AuthOptions(deepLinkInfo = deepLinkInfo))
         }
     }
 

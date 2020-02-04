@@ -36,35 +36,12 @@ class OnBoardingPresenter @Inject constructor(
 
     fun connectToCommunityServer(communityServerUrl: String) {
         connectToServer(communityServerUrl) {
-            if (totalSocialAccountsEnabled == 0 && !isNewAccountCreationEnabled) {
+            if (authOptions.totalSocialAccountsEnabled == 0 && !authOptions.isNewAccountCreationEnabled) {
                 navigator.toLogin(communityServerUrl)
             } else {
                 navigator.toLoginOptions(
                     communityServerUrl,
-                    state,
-                    facebookOauthUrl,
-                    githubOauthUrl,
-                    googleOauthUrl,
-                    linkedinOauthUrl,
-                    gitlabOauthUrl,
-                    wordpressOauthUrl,
-                    casLoginUrl,
-                    casToken,
-                    casServiceName,
-                    casServiceNameTextColor,
-                    casServiceButtonColor,
-                    customOauthUrl,
-                    customOauthServiceName,
-                    customOauthServiceNameTextColor,
-                    customOauthServiceButtonColor,
-                    samlUrl,
-                    samlToken,
-                    samlServiceName,
-                    samlServiceNameTextColor,
-                    samlServiceButtonColor,
-                    totalSocialAccountsEnabled,
-                    isLoginFormEnabled,
-                    isNewAccountCreationEnabled
+                    authOptions
                 )
             }
         }
