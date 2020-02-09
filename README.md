@@ -2,19 +2,20 @@
 
 ## Fixed bad smells
 
-Branch: [fix/bad-smells](https://github.com/allancslima/Rocket.Chat.Android/tree/fix/bad-smells)
-
 - **Long method**
+
 _Commit_: [3ba3fd03071c6bc6f729feb134924eee270f45a3](https://github.com/allancslima/Rocket.Chat.Android/commit/3ba3fd03071c6bc6f729feb134924eee270f45a3)
 _Where_: `LoginPresenter`, which responsible for reacting to view actions.
 _Fix_: The method `authenticateWithUserAndPassword` was responsible to build user request, handle result and treat possible errors, it was trying to do too much, so I broke this method in more two other methods (private): `onUserAuthenticated` and `handleAuthenticationError`.
 
 - **Duplicated code**
+
 _Commit_: [94ac0490dbcea9c9c8c76e5d85be97cee9e5bdfc](https://github.com/allancslima/Rocket.Chat.Android/commit/94ac0490dbcea9c9c8c76e5d85be97cee9e5bdfc)
 _Where_: `EmojiKeyboardPopup`, which is an emoji window that appears over keyboard.
 _Fix_: On method `showSkinToneChooser` that handles the choose of emoji skin tones, instead of define the `setOnClickListener` to each skin tone "button", that consists in select the specific color and then close dialog, I put all skin tones  in the form of `Pair<"Button", SkinToke>` in a list and I iterate it defining the `setOnClickListener`.
 
 - **Long parameters list**
+
 _Commit_: [97df25a2e4f9b9046a9f05563a28951609c5beab](https://github.com/allancslima/Rocket.Chat.Android/commit/97df25a2e4f9b9046a9f05563a28951609c5beab)
 _Where_: Many places.
 _Fix_: There is a set of authentication values that are used in the login step, all of which are passed as string variables between methods, more specifically 24 values. So, I put all of them in a data class, that way I encapsulate those values and now I can add useful methods to handle them easily.
